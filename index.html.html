@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>이벤트 참여</title>
+<style>
+:root{--bg:#f2f5f9;--ink:#14213d;--sub:#5b667a;--card:#fff;--line:#dde3ec;--main:#2f5bff;--ok:#12b76a;--bad:#e5484d;--coffee:#6b4226}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1626;--ink:#eef2fa;--sub:#9aa7bd;--card:#18233a;--line:#2a3855;--main:#6f8dff}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Pretendard,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
+body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+main{max-width:480px;margin:0 auto;padding:28px 20px 40px}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-bottom:28px}
+.bar i{display:block;height:100%;width:0;background:var(--main);transition:width .4s}
+h1{font-size:26px;line-height:1.3;margin:0 0 8px;letter-spacing:-.02em}
+p.lead{margin:0 0 24px;color:var(--sub);line-height:1.6;font-size:15px}
+section{display:none}section.on{display:block}
+label{display:block;font-size:14px;font-weight:600;margin:16px 0 6px}
+input.t{width:100%;height:52px;border:1.5px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;background:var(--card);color:var(--ink)}
+input.t:focus{outline:none;border-color:var(--main)}
+button.go{width:100%;height:54px;margin-top:24px;border:0;border-radius:14px;background:var(--main);color:#fff;font-size:17px;font-weight:700}
+button.go:disabled{opacity:.4}
+.msg{min-height:22px;margin-top:12px;font-size:14px;font-weight:600}
+.msg.bad{color:var(--bad)}.msg.ok{color:var(--ok)}
+/* crossword */
+.grid{display:grid;gap:4px;justify-content:center;margin:8px 0 20px}
+.cell{width:52px;height:52px;position:relative}
+.cell input{width:100%;height:100%;text-align:center;font-size:22px;font-weight:700;border:1.5px solid var(--ink);border-radius:10px;background:var(--card);color:var(--ink);padding:0}
+.cell input:focus{outline:none;border-color:var(--main);box-shadow:0 0 0 3px color-mix(in srgb,var(--main) 25%,transparent)}
+.cell.wrong input{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--card))}
+.cell b{position:absolute;top:3px;left:5px;font-size:10px;color:var(--sub);pointer-events:none}
+.clues{background:var(--card);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.7}
+.clues div+div{margin-top:2px}
+.shake{animation:sh .35s}@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+/* vote */
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.panel{min-height:76px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font-size:16px;font-weight:600;padding:12px;text-align:left}
+.panel.sel{border-color:var(--main);background:color-mix(in srgb,var(--main) 12%,var(--card));box-shadow:inset 0 0 0 1px var(--main)}
+/* pass */
+.pass{text-align:center;padding-top:36px}
+.badge{width:96px;height:96px;margin:0 auto 20px;border-radius:50%;background:var(--ok);display:grid;place-items:center}
+.badge svg{width:48px;height:48px}
+.coupon{margin-top:24px;padding:18px;border-radius:16px;background:var(--coffee);color:#fff;font-size:16px;line-height:1.6;font-weight:600}
+</style>
+</head>
+<body>
+<main>
+<div class="bar"><i id="prog"></i></div>
+
+<section id="s1" class="on">
+  <h1>이벤트에 오신 것을 환영합니다</h1>
+  <p class="lead">참여를 위해 Knox ID와 성명을 입력해 주세요.</p>
+  <label for="kid">Knox ID</label>
+  <input class="t" id="kid" autocomplete="off" autocapitalize="off" inputmode="text">
+  <label for="nm">성명</label>
+  <input class="t" id="nm" autocomplete="off">
+  <div class="msg bad" id="m1"></div>
+  <button class="go" id="b1">시작하기</button>
+</section>
+
+<section id="s2">
+  <h1>낱말퀴즈</h1>
+  <p class="lead">칸을 눌러 한 글자씩 입력한 뒤 정답을 확인하세요.</p>
+  <div class="grid" id="grid"></div>
+  <div class="clues" id="clues"></div>
+  <div class="msg" id="m2"></div>
+  <button class="go" id="b2">정답 확인</button>
+</section>
+
+<section id="s3">
+  <h1>마음에 드는 패널에 투표해 주세요</h1>
+  <p class="lead">12개 패널 중 하나를 선택할 수 있어요.</p>
+  <div class="panels" id="panels"></div>
+  <div class="msg bad" id="m3"></div>
+  <button class="go" id="b3" disabled>투표하기</button>
+</section>
+
+<section id="s4">
+  <div class="pass">
+    <div class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <h1>최종 Pass 되었습니다.</h1>
+    <div class="coupon">이벤트 안내 부스로 가셔서<br>커피 쿠폰 수령 부탁드립니다.</div>
+  </div>
+</section>
+</main>
+
+<script>
+/* ===== 설정 (나중에 여기만 수정) ===== */
+const LOG_URL = "https://script.google.com/macros/s/AKfycbyRfCpWhw2F9H7jpiyENoY50a6qO-3JALzT1P3DuNB51vdO0r6oZkuXZYMo88rYluNZ/exec";   // Google Apps Script 웹 앱 URL을 붙여넣으세요 (비워두면 기록 안 함)
+const WORDS = [       // 낱말퀴즈: r=행, c=열(0부터), dir=가로(a)/세로(d), 답, 힌트
+  {r:0,c:0,dir:"a",ans:"커피콩",clue:"[예시] 커피의 원료"},
+  {r:0,c:0,dir:"d",ans:"커튼",clue:"[예시] 창문에 다는 천"},
+  {r:0,c:2,dir:"d",ans:"콩나물",clue:"[예시] 콩을 키워 만든 반찬 재료"}
+];
+const PANELS = Array.from({length:12},(_,i)=>"패널 "+(i+1)); // 패널 이름 교체
+/* ==================================== */
+
+const $=id=>document.getElementById(id);
+let user={}, cells={}, vote=null;
+const steps=["s1","s2","s3","s4"];
+function show(n){steps.forEach((s,i)=>$(s).classList.toggle("on",i===n));$("prog").style.width=(n+1)*25+"%";scrollTo(0,0)}
+function log(event,extra){
+  if(!LOG_URL)return;
+  const body=JSON.stringify(Object.assign({time:new Date().toISOString(),knoxId:user.id,name:user.name,event:event,pass:event==="pass"?"Y":"N"},extra||{}));
+  try{fetch(LOG_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:body})}catch(e){}
+}
+
+/* 1. 정보 입력 */
+$("b1").onclick=()=>{
+  const id=$("kid").value.trim(),nm=$("nm").value.trim();
+  if(!id||!nm){$("m1").textContent="Knox ID와 성명을 모두 입력해 주세요.";return}
+  user={id,name:nm};$("m1").textContent="";
+  log("start");buildQuiz();show(1);
+};
+
+/* 2. 낱말퀴즈 */
+function buildQuiz(){
+  cells={};let R=0,C=0;
+  WORDS.forEach(w=>{[...w.ans].forEach((ch,i)=>{
+    const r=w.r+(w.dir==="d"?i:0),c=w.c+(w.dir==="a"?i:0);
+    cells[r+","+c]=ch;R=Math.max(R,r+1);C=Math.max(C,c+1)})});
+  const g=$("grid");g.innerHTML="";g.style.gridTemplateColumns="repeat("+C+",52px)";
+  const nums={};let n=0;
+  WORDS.forEach(w=>{const k=w.r+","+w.c;if(!nums[k])nums[k]=++n;w.n=nums[k]});
+  const order=[];
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){
+    const d=document.createElement("div");
+    if(cells[r+","+c]){
+      d.className="cell";d.dataset.k=r+","+c;
+      if(nums[r+","+c])d.innerHTML="<b>"+nums[r+","+c]+"</b>";
+      const inp=document.createElement("input");inp.autocomplete="off";inp.spellcheck=false;
+      inp.setAttribute("autocorrect","off");inp.setAttribute("autocapitalize","off");
+      inp.addEventListener("focus",()=>inp.select());
+      inp.addEventListener("blur",()=>{inp.value=[...inp.value.normalize("NFC").trim()][0]||""});
+      d.appendChild(inp);
+    }else d.style.visibility="hidden";
+    g.appendChild(d);
+  }
+  $("clues").innerHTML=WORDS.map(w=>"<div><b>"+w.n+" "+(w.dir==="a"?"가로":"세로")+"</b> "+w.clue+"</div>").join("");
+}
+$("b2").onclick=()=>{
+  let all=true,empty=false;
+  document.querySelectorAll(".cell").forEach(d=>{
+    const v=[...d.querySelector("input").value.normalize("NFC").trim()][0]||"",ok=v===cells[d.dataset.k];
+    d.classList.toggle("wrong",!ok);if(!ok)all=false;if(!v)empty=true});
+  const m=$("m2");
+  if(all){m.className="msg ok";m.textContent="정답입니다!";log("quiz_pass");setTimeout(()=>show(2),700)}
+  else{m.className="msg bad";m.textContent=empty?"비어 있는 칸이 있어요. 모두 채워 주세요.":"틀린 칸(빨간색)을 다시 확인해 주세요.";
+    $("grid").classList.remove("shake");void $("grid").offsetWidth;$("grid").classList.add("shake")}
+};
+
+/* 3. 투표 */
+PANELS.forEach(p=>{
+  const b=document.createElement("button");b.className="panel";b.textContent=p;
+  b.onclick=()=>{vote=p;document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("sel",x===b));$("b3").disabled=false};
+  $("panels").appendChild(b);
+});
+$("b3").onclick=()=>{
+  if(!vote){$("m3").textContent="패널을 선택해 주세요.";return}
+  log("pass",{vote});show(3);
+};
+</script>
+</body>
+</html>
