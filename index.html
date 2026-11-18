@@ -271,7 +271,7 @@ button.go:active{transform:scale(.98)}button.go:disabled{opacity:.4;box-shadow:n
   <div class="done">
     <div class="ok" id="okb">PASS</div>
     <h1>최종 Pass 되었습니다!</h1>
-    <p class="lead" id="pl" style="margin-bottom:0">이 화면을 <b>이벤트 안내 부스</b>에서 보여주시면<br>경품을 받으실 수 있어요.</p>
+    <p class="lead" id="pl" style="margin-bottom:0">이 화면을 <b>이벤트 상품 수령 부스</b>에서 보여주시면<br>경품을 받으실 수 있어요.</p>
     <div class="who" id="who" style="user-select:none;-webkit-user-select:none;-webkit-touch-callout:none"></div>
     <div class="replay">하늘 화면을 누르면 발사 장면을 다시 볼 수 있어요</div>
     <button class="adm" id="adm">관리자 확인</button>
@@ -504,7 +504,7 @@ const PNAME=()=>rec&&rec.prize==="baemin"?"배달의민족 상품권":"커피 �
 function renderPass(){
   const pn=PNAME();
   $("who").innerHTML=(rec.dept?esc(rec.dept)+" · ":"")+"<b>"+esc(rec.name)+"</b> · "+esc(rec.id)+"<br>"+fmt(rec.time)+"<br>🎁 "+pn+(rec.special?" · "+rec.n+"번째 참여 특별상":"");
-  $("pl").innerHTML="이 화면을 <b>이벤트 안내 부스</b>에서 보여주시면<br><b>"+pn+"</b>을 받으실 수 있어요.";
+  $("pl").innerHTML="이 화면을 <b>이벤트 상품 수령 부스</b>에서 보여주시면<br><b>"+pn+"</b>을 받으실 수 있어요.";
   const ob=$("okb");
   if(rec.special){ob.textContent="🏆 "+rec.n+"번째 참여자 특별상";ob.style.cssText="background:rgba(255,184,0,.22);color:#b37d00;font-size:15px"}
   else{ob.textContent="PASS";ob.style.cssText=""}
