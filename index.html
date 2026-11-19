@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>26년 소형 기술전시회</title>
+<title>’26년 소형 기술전시회</title>
 <style>
 :root{--bg:#f3f5fb;--ink:#13204a;--sub:#5f6b88;--card:#fff;--line:#dfe5f2;--main:#3b5bff;--main2:#7a4dff;--ok:#12b76a;--bad:#e5484d;--soft:#eaeeff}
 @media (prefers-color-scheme:dark){:root{--bg:#0b1226;--ink:#eef2ff;--sub:#9aa7c7;--card:#16203d;--line:#27345c;--main:#7c93ff;--soft:#1f2d57}}
@@ -172,16 +172,17 @@ button.go:active{transform:scale(.98)}button.go:disabled{opacity:.4;box-shadow:n
 <body>
 <div class="wrap">
 <header class="hero">
-  <div class="brand">26년 소형 기술전시회</div>
+  <div class="brand">’26년 소형 기술전시회</div>
   <div class="steps" id="steps"><i class="on"></i><i></i><i></i><i></i><i></i></div>
 </header>
 <div class="sheet">
 
 <section id="s1" class="on">
-  <h1>26년 소형 기술전시회에<br>오신 것을 환영합니다</h1>
+  <h1>’26년 소형 기술전시회에<br>오신 것을 환영합니다</h1>
   <p class="lead">커피쿠폰과 다양한 경품에 응모하세요!</p>
   <label>소속</label>
   <div class="chips" id="depts"></div>
+  <input class="t" id="deptEtc" maxlength="30" placeholder="소속을 직접 입력해 주세요" autocomplete="off" hidden style="margin-top:10px">
   <label for="kid">Knox ID</label>
   <input class="t" id="kid" autocomplete="off" autocapitalize="off">
   <label for="nm">성명</label>
@@ -312,13 +313,16 @@ function log(event,extra){
 /* 1. 정보 입력 */
 let dept=null;
 DEPTS.forEach(d=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=d;
-  b.onclick=()=>{dept=d;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("sel",x===b));$("m1").textContent=""};
+  b.onclick=()=>{dept=d;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("sel",x===b));$("m1").textContent="";
+    $("deptEtc").hidden=d!=="기타";if(d==="기타")$("deptEtc").focus()};
   $("depts").appendChild(b)});
 $("b1").onclick=()=>{
   const id=$("kid").value.trim(),nm=$("nm").value.trim();
   if(!dept){$("m1").textContent="소속을 선택해 주세요.";return}
+  const etc=$("deptEtc").value.trim();
+  if(dept==="기타"&&!etc){$("m1").textContent="기타 소속을 입력해 주세요.";return}
   if(!id||!nm){$("m1").textContent="Knox ID와 성명을 모두 입력해 주세요.";return}
-  user={id,name:nm,dept};$("m1").textContent="";log("start");buildQuiz();show(1);
+  user={id,name:nm,dept:dept==="기타"?"기타("+etc+")":dept};$("m1").textContent="";log("start");buildQuiz();show(1);
 };
 
 /* 2. 낱말퀴즈: 숨은 입력창 1개에 낱말을 이어서 쓰면 칸에 한 글자씩 채워짐(한글 조합 오류 방지) */
